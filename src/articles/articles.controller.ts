@@ -6,38 +6,52 @@ import {
   Param,
   Patch,
   Post,
+  ValidationPipe,
 } from '@nestjs/common';
-import { Article, ArticlesService, ResponseStatus } from './articles.service';
+import { Article, ResponseStatusType, SimpleArticle } from './article.types';
+import { ArticlesService } from './articles.service';
+import { CreateArticleDto } from './dto/create-article.dto';
+import { UpdateArticleDto } from './dto/update-article.dto.';
+import { GetArticleDto } from './dto/get-article.dto';
 
 @Controller('articles')
 export class ArticlesController {
   constructor(private articleService: ArticlesService) {}
 
   @Get()
-  getAllArticles(): Article[] {
+  getAllArticles(): Promise<SimpleArticle[]> {
     return this.articleService.getAllArticles();
   }
 
   @Get(':id')
-  getArticle(@Param('id') articleId: number): Article {
-    return this.articleService.getArticle(articleId);
+  getArticle(
+    @Param(ValidationPipe) { id: articleId }: GetArticleDto,
+  ): Promise<Article> {
+    return this.articleService.getArticle(articleId.toString());
   }
 
   @Post()
-  createArticle(@Body() article: Article): Article {
-    return this.articleService.createArticle(article);
+  createArticle(
+    @Body(ValidationPipe) createArticleDto: CreateArticleDto,
+  ): Promise<ResponseStatusType> {
+    return this.articleService.createArticle(createArticleDto);
   }
 
   @Patch(':id')
   editArticle(
-    @Param('id') articleId: number,
-    @Body() editedArticle: Partial<Article>,
-  ) {
-    this.articleService.editArticle(articleId, editedArticle);
+    @Param(ValidationPipe) { id: articleId }: GetArticleDto,
+    @Body(ValidationPipe) updateArticleDto: UpdateArticleDto,
+  ): Promise<Article> {
+    return this.articleService.editArticle(
+      articleId.toString(),
+      updateArticleDto,
+    );
   }
 
   @Delete(':id')
-  removeArticle(@Param('id') articleId: number): ResponseStatus {
-    return this.articleService.removeArticle(articleId);
+  removeArticle(
+    @Param(ValidationPipe) { id: articleId }: GetArticleDto,
+  ): Promise<ResponseStatusType> {
+    return this.articleService.removeArticle(articleId.toString());
   }
 }

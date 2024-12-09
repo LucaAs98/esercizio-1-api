@@ -78,4 +78,17 @@ export class ArticlesService {
     await this.entityManager.save(new Article(article));
     return responseStatus.OK;
   }
+
+  // Remove all articles
+  async removeAllArticles(): Promise<ResponseStatusType> {
+    const articles = await this.articleRepository.findBy({ is_deleted: false });
+
+    // Mark all articles as deleted
+    for (const article of articles) {
+      article.is_deleted = true;
+      await this.entityManager.save(new Article(article));
+    }
+
+    return responseStatus.OK;
+  }
 }

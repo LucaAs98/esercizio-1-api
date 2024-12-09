@@ -8,7 +8,13 @@ import {
   Post,
   ValidationPipe,
 } from '@nestjs/common';
-import { Article, ResponseStatusType, SimpleArticle } from './article.types';
+import {
+  Article,
+  purgeArticlesData,
+  responseStatus,
+  ResponseStatusType,
+  SimpleArticle,
+} from './article.types';
 import { ArticlesService } from './articles.service';
 import { CreateArticleDto } from './dto/create-article.dto';
 import { UpdateArticleDto } from './dto/update-article.dto.';
@@ -48,10 +54,19 @@ export class ArticlesController {
     );
   }
 
-  @Delete(':id')
+  @Delete('delete/:id')
   removeArticle(
     @Param(ValidationPipe) { id: articleId }: GetArticleDto,
   ): Promise<ResponseStatusType> {
     return this.articleService.removeArticle(articleId.toString());
+  }
+
+  @Delete('purge')
+  async purgeDatabase(): Promise<ResponseStatusType> {
+    await this.articleService.removeAllArticles(); // Rimuove tutti gli articoli
+    for (const article of purgeArticlesData) {
+      await this.articleService.createArticle(article);
+    }
+    return responseStatus.OK;
   }
 }

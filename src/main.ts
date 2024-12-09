@@ -10,7 +10,7 @@ async function bootstrap() {
       origin: 'http://localhost:3000',
       methods: 'GET, POST, PUT, DELETE, OPTIONS',
       allowedHeaders: 'Content-Type, Authorization',
-      debug: true, // Questo mostrerà i dettagli nei log
+      debug: true,
     }),
   );
 

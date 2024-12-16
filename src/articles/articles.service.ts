@@ -1,14 +1,15 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import {
-  ResponseStatusType,
-  SimpleArticle,
-  responseStatus,
-} from './article.types';
+import { ResponseStatusType, responseStatus } from './article.types';
 import { CreateArticleDto } from './dto/create-article.dto';
 import { UpdateArticleDto } from './dto/update-article.dto.';
 import { EntityManager, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Article } from './article.entity';
+import { PaginationDto } from './dto/pagination.dto';
+import { PaginatedArticlesDto } from './dto/paginated-articles';
+
+const DEFAULT_PAGE = 1;
+const DEFAULT_PAGE_SIZE = 10;
 
 @Injectable()
 export class ArticlesService {
@@ -18,15 +19,23 @@ export class ArticlesService {
     private entityManager: EntityManager,
   ) {}
 
-  // Get all articles
-  async getAllArticles(): Promise<SimpleArticle[]> {
-    const articles = await this.articleRepository.findBy({ is_deleted: false });
+  // Get all articles with pagination
+  async getAllArticles(
+    paginationDTO: PaginationDto,
+  ): Promise<PaginatedArticlesDto> {
+    const take = paginationDTO.limit
+      ? Number(paginationDTO.limit)
+      : DEFAULT_PAGE_SIZE;
+    const page = paginationDTO.page ? Number(paginationDTO.page) : DEFAULT_PAGE;
 
-    return articles.map((article) => ({
-      id: article.id,
-      title: article.title,
-      image: article.image,
-    }));
+    const [articles, total] = await this.articleRepository.findAndCount({
+      where: { is_deleted: false },
+      select: ['id', 'title', 'image'],
+      skip: (page - 1) * take,
+      take: take,
+    });
+
+    return { articles, total, page, pageCount: Math.ceil(total / take) };
   }
 
   // Get a specific article by ID

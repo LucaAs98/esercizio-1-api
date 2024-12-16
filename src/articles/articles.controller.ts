@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   ValidationPipe,
 } from '@nestjs/common';
 import {
@@ -13,20 +14,23 @@ import {
   purgeArticlesData,
   responseStatus,
   ResponseStatusType,
-  SimpleArticle,
 } from './article.types';
 import { ArticlesService } from './articles.service';
 import { CreateArticleDto } from './dto/create-article.dto';
 import { UpdateArticleDto } from './dto/update-article.dto.';
 import { GetArticleDto } from './dto/get-article.dto';
+import { PaginationDto } from './dto/pagination.dto';
+import { PaginatedArticlesDto } from './dto/paginated-articles';
 
 @Controller('articles')
 export class ArticlesController {
   constructor(private articleService: ArticlesService) {}
 
   @Get()
-  getAllArticles(): Promise<SimpleArticle[]> {
-    return this.articleService.getAllArticles();
+  getAllArticles(
+    @Query(ValidationPipe) paginationDTO: PaginationDto,
+  ): Promise<PaginatedArticlesDto> {
+    return this.articleService.getAllArticles(paginationDTO);
   }
 
   @Get(':id')
